@@ -24,6 +24,7 @@ class _ChannelPageState extends State<ChannelPage> {
   final ScrollController _listScrollController = ScrollController();
   final TextEditingController _textEditingController = TextEditingController();
   UserProfileModel? _userProfile;
+  UserProfileModel? _sellerProfile;
   int _messagesLimit = 20;
   static const int PAGINATION_INCREMENT = 20;
   String _message = "";
@@ -47,8 +48,18 @@ class _ChannelPageState extends State<ChannelPage> {
         .getUserProfileById(widget.channel.getChannelSellerId)
         .then((value) {
       setState(() {
-        _userProfile = value;
+        _sellerProfile = value;
       });
+    });
+
+    // ------ ------ ---- get user profile
+    widget.channel.getChannelContactUesrId.then((contactId) {
+      _profileController
+          .getUserProfileById(contactId)
+          .then((userProfile) => setState(() {
+                _userProfile = userProfile;
+                
+              }));
     });
     // --------- ------- init pagination
     _listScrollController.addListener(_scrollListener);
