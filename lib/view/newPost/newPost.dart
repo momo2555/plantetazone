@@ -30,7 +30,7 @@ class _NewPostPageState extends State<NewPostPage> {
   //add stored data
   String _title ='';
   String _description = "";
-  List<String?> _images = [];
+  List<String> _images = [];
   String _category = PostModel.getCategories[0];
   double _price = 0;
   double _weight = 0;

@@ -1,28 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:plantetazone/controler/messagingController.dart';
+import 'package:plantetazone/models/messageModel.dart';
+import 'package:plantetazone/models/userProfileModel.dart';
 
 enum MessageBlocType { RECEIVER, SENDER }
 
 class MessageBloc extends StatefulWidget {
-  const MessageBloc.receiver({
+  const MessageBloc({
     Key? key,
-    this.content,
-  })  : type = MessageBlocType.RECEIVER,
-        super(key: key);
-  const MessageBloc.sender({
-    Key? key,
-    this.content,
-  })  : type = MessageBlocType.SENDER,
-        super(key: key);
-
-  final MessageBlocType type;
-  final Widget? content;
+    required this.message,
+    this.user,
+  }) : super(key: key);
+  final MessageModel message;
+  final UserProfileModel? user;
   @override
   State<MessageBloc> createState() => _MessageBlocState();
 }
 
 class _MessageBlocState extends State<MessageBloc> {
+  MessagingController _messagingController = MessagingController();
   Widget _receiverBuild() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -38,7 +36,7 @@ class _MessageBlocState extends State<MessageBloc> {
                   color: Color.fromARGB(255, 210, 210, 210),
                   borderRadius: BorderRadius.circular(20)),
               padding: EdgeInsets.all(12),
-              child: widget.content,
+              child: _contentBuild(),
             ),
           ),
         ),
@@ -53,6 +51,9 @@ class _MessageBlocState extends State<MessageBloc> {
         CircleAvatar(
           backgroundColor: Theme.of(context).primaryColor,
           radius: 20,
+          backgroundImage: widget.user != null
+              ? NetworkImage(widget.user?.getUserProfileImageURL)
+              : null,
         ),
         Flexible(
           child: Padding(
@@ -64,7 +65,7 @@ class _MessageBlocState extends State<MessageBloc> {
                   border: Border.all(
                       color: Theme.of(context).primaryColorDark, width: 1)),
               padding: EdgeInsets.all(12),
-              child: widget.content,
+              child: _contentBuild(),
             ),
           ),
         ),
@@ -75,13 +76,36 @@ class _MessageBlocState extends State<MessageBloc> {
     );
   }
 
+  Widget _contentBuild() {
+    String type = widget.message.getMessageType;
+    if (type == 'text') {
+      //simple text message
+      return Text(widget.message.getMessageValue);
+    } else if (type == "image") {
+      //image message
+      return FutureBuilder<MessageModel>(
+          future: _messagingController.downloadImage(widget.message),
+          builder: (context, snapshot) {
+            if (snapshot.hasData)
+              return Image(
+                image: FileImage(snapshot.data!.getMessageFileImage),
+              );
+            else
+              return Container();
+          });
+    } else {
+      //nothing
+      return Container();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     //return Row()
-    if (widget.type == MessageBlocType.RECEIVER) {
-      return _receiverBuild();
-    } else {
+    if (widget.message.getMessageSenderId == widget.user?.getUid) {
       return _senderBuild();
+    } else {
+      return _receiverBuild();
     }
   }
 }

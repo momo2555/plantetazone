@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:plantetazone/components/messageBloc.dart';
+import 'package:plantetazone/components/newPostImagePicker.dart';
 import 'package:plantetazone/components/simpleInput.dart';
 import 'package:plantetazone/controler/messagingController.dart';
 import 'package:plantetazone/controler/profilController.dart';
@@ -25,9 +26,14 @@ class _ChannelPageState extends State<ChannelPage> {
   final TextEditingController _textEditingController = TextEditingController();
   UserProfileModel? _userProfile;
   UserProfileModel? _sellerProfile;
+  Widget _imagePicker = Container();
+  bool _imagePickerOn = false;
+  IconData _imagePickerIcon = Icons.image;
   int _messagesLimit = 20;
   static const int PAGINATION_INCREMENT = 20;
   String _message = "";
+  //image sending
+  List<String> _imgPaths = [];
 
   void _scrollListener() {
     if (_listScrollController.offset >=
@@ -58,7 +64,6 @@ class _ChannelPageState extends State<ChannelPage> {
           .getUserProfileById(contactId)
           .then((userProfile) => setState(() {
                 _userProfile = userProfile;
-                
               }));
     });
     // --------- ------- init pagination
@@ -98,34 +103,65 @@ class _ChannelPageState extends State<ChannelPage> {
           elevation: 5,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-            child: Row(children: [
-              InkWell(
-                child: Icon(Icons.photo,
-                    color: Theme.of(context).primaryColor, size: 34),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: SimpleInput(
-                    placeholder: 'Message ...',
-                    type: 'text',
-                    onChange: (value) {
-                      _message = value;
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _imagePicker,
+                Row(children: [
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (!_imagePickerOn) {
+                          _imagePicker = NewPostImagePicker(
+                            onChange: ((imagePaths) {
+                              //save images path in a globale variable
+                              _imgPaths = imagePaths;
+                            }),
+                          );
+                          _imagePickerOn = true;
+                          _imagePickerIcon = Icons.close;
+                        }else {
+                          _imagePicker = Container();
+                          _imgPaths = [];
+                          _imagePickerOn = false;
+                          _imagePickerIcon = Icons.photo;
+                        }
+                      });
                     },
+                    child: Icon(_imagePickerIcon,
+                        color: Theme.of(context).primaryColor, size: 34),
                   ),
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  MessageModel message = MessageModel();
-                  message.setMessageType = 'text';
-                  message.setMessageValue = _message;
-                  _messagingController.sendMessage(message, widget.channel);
-                },
-                child: Icon(Icons.send,
-                    color: Theme.of(context).primaryColorDark, size: 34),
-              ),
-            ]),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                      child: SimpleInput(
+                        placeholder: 'Message ...',
+                        type: 'text',
+                        onChange: (value) {
+                          _message = value;
+                        },
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      //Send messages
+                      MessageModel message = MessageModel();
+                      message.setMessageType = 'text';
+                      message.setMessageValue = _message;
+                      _messagingController.sendMessage(message, widget.channel);
+                      //Send images
+                      if (_imgPaths.length > 0) {
+                        _messagingController.sendImages(
+                            _imgPaths, widget.channel);
+                      }
+                    },
+                    child: Icon(Icons.send,
+                        color: Theme.of(context).primaryColorDark, size: 34),
+                  ),
+                ]),
+              ],
+            ),
           ),
         ),
         body: Container(
@@ -141,20 +177,18 @@ class _ChannelPageState extends State<ChannelPage> {
                   stream: _messagingController.getMessages(
                       widget.channel, _messagesLimit),
                   builder: (context, snapshot) {
+                    print("je suis dans le stream de messages");
                     if (snapshot.hasData && _userProfile != null) {
+                      print("en plus j'ai des données");
                       List<MessageBloc> messages = [];
                       snapshot.data!.removeAt(0);
+                      print(snapshot.data);
                       messages = snapshot.data!.map((e) {
-                        //create the correcte messagebloc
-                        if (e.getMessageSenderId == _userProfile!.getUid) {
-                          return MessageBloc.sender(
-                            content: Text(e.getMessageValue),
-                          );
-                        } else {
-                          return MessageBloc.receiver(
-                            content: Text(e.getMessageValue),
-                          );
-                        }
+                        print(e.toObject());
+                        return MessageBloc(
+                          message: e,
+                          user: _userProfile,
+                        );
                       }).toList();
                       return ListView(
                         controller: _listScrollController,

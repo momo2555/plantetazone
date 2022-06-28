@@ -16,6 +16,7 @@ enum LocalSaveMode {
  */
 class CacheStorageController {
   FirebaseStorage fireStorage = FirebaseStorage.instance;
+  
   Future<File> downloadFromCloud(String folderPath, String fileName, LocalSaveMode mode) async {
     Reference downloadRef = fireStorage.ref(folderPath + fileName);
     //by default the directory is the cache

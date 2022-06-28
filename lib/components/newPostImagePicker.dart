@@ -12,19 +12,22 @@ class NewPostImagePicker extends StatefulWidget {
     this.onChange,
     }) : super(key: key);
     final int maxImages;
-    final Function(List<String?> imagePaths)? onChange;
+    final Function(List<String> imagePaths)? onChange;
   @override
   State<NewPostImagePicker> createState() => _NewPostImagePickerState();
 }
 
 class _NewPostImagePickerState extends State<NewPostImagePicker> {
-  List<String?> imagePaths = [];
+  List<String> imagePaths = [];
   @override
   void setState(VoidCallback fn) {
     
     super.setState(fn);
     //when state change send the image path to the callback function
-    widget.onChange!(imagePaths);
+    if (widget.onChange != null) {
+      widget.onChange!(imagePaths);
+    }
+    
   }
   Widget _addButton() {
     return Expanded(
@@ -45,7 +48,7 @@ class _NewPostImagePickerState extends State<NewPostImagePicker> {
               if(length > widget.maxImages) length = widget.maxImages;
               setState(() {
                 for (int i = 0;i<length;i++) {
-                  imagePaths.add(result.paths[i]);
+                  imagePaths.add(result.paths[i]??"");
                 }
               });
               
@@ -76,7 +79,7 @@ class _NewPostImagePickerState extends State<NewPostImagePicker> {
     );
   }
   Widget _ImageBloc(int index) {
-    //resize the image (to have smaller image for uploading in the server (max 500px ))
+    // TODO : resize the image (to have smaller image for uploading in the server (max 500px ))
     
     return Expanded(
       child: Padding(
@@ -98,7 +101,7 @@ class _NewPostImagePickerState extends State<NewPostImagePicker> {
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(7.5),
             image: DecorationImage(
-              image: FileImage(File(imagePaths[index]??'')),
+              image: FileImage(File(imagePaths[index])),
               fit: BoxFit.cover,
               alignment: Alignment.center,
             ),

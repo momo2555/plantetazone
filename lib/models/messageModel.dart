@@ -1,9 +1,12 @@
+import 'dart:io';
+
 class MessageModel {
   DateTime? messageTime;
   String? messageType;
   String? messageValue;
   String? messageSenderId;
   String? messageReceiverId;
+  File? messageFileImage;
   MessageModel():super();
 
   get getMessageTime {
@@ -21,22 +24,28 @@ class MessageModel {
   get getMessageReceiverId {
     return messageReceiverId;
   }
+  get getMessageFileImage {
+    return messageFileImage;
+  }
 
 
   set setMessageTime (value) {
-     messageTime = value;
+    messageTime = value;
   }
   set setMessageType(value) {
-     messageType = value;
+    messageType = value;
   }
   set setMessageValue(value) {
-     messageValue = value;
+    messageValue = value;
   }
   set setMessageSenderId (value){
-     messageSenderId = value;
+    messageSenderId = value;
   }
   set setMessageReceiverId (value){
-     messageReceiverId = value;
+    messageReceiverId = value;
+  }
+  set setMessageFileImage(value) {
+    messageFileImage = value;
   }
 
   Map<String, dynamic> toObject()  {
@@ -44,6 +53,7 @@ class MessageModel {
       "messageType":messageType,
       "messageValue":messageValue,
       "messageSenderId":messageSenderId,
+      "messageTime": messageTime?.millisecondsSinceEpoch.toString()??'',
     };
   }
 }
