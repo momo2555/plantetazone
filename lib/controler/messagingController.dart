@@ -131,11 +131,9 @@ class MessagingController {
           fireStore.collection('channels').doc(channel.getChannelId);
       //first upload the image upload image
       File imgFile = File(img);
-      String newPath = message.getMessageValue;
-      Reference uploadRef = fireStorage.ref('messageImages/' + channel.getChannelId + '/' + newPath); //in a unique folder
-      await uploadRef.putFile(imgFile); //await until upload (befor editing data base)
+      String firestorageNewPath = 'messageImages/' + channel.getChannelId + '/' + message.getMessageValue;
+      await _storageController.uploadImage(imgFile, firestorageNewPath);
       //create a new massage with the now timestamp
-      message.setMessageTime = DateTime.now();
       DocumentReference messagesRef = ref
         .collection('messages')
         .doc(message.getMessageTime.millisecondsSinceEpoch.toString());
