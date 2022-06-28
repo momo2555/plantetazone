@@ -177,9 +177,9 @@ class _ChannelPageState extends State<ChannelPage> {
                   stream: _messagingController.getMessages(
                       widget.channel, _messagesLimit),
                   builder: (context, snapshot) {
-                    print("je suis dans le stream de messages");
+                    
                     if (snapshot.hasData && _userProfile != null) {
-                      print("en plus j'ai des données");
+                      
                       List<MessageBloc> messages = [];
                       snapshot.data!.removeAt(0);
                       print(snapshot.data);
