@@ -56,15 +56,15 @@ class CacheStorageController {
     //Flutter image compress
     Uint8List? compressedImage = await FlutterImageCompress.compressWithFile(
       image.path,
-      minWidth: 900,
-      quality: 70,
+      minWidth: 600,
+      quality: 40,
     );
     if (compressedImage != null) {
       await image.writeAsBytes(compressedImage);
       Reference uploadRef = fireStorage.ref(destination);
       final uploadTask = await uploadRef
           .putFile(image); //await until upload (befor editing data base)
-      if (uploadTask.state == TaskState.success) {
+      if (uploadTask.state != TaskState.success) {
         throw Exception(
             "Une erreur lors du téléchargement de l'image s'est produite ! ");
       }
